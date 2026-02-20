@@ -47,7 +47,7 @@ Generate local TLS certs:
 docker run --rm -v "${PWD}:/work" alpine:3.20 sh /work/scripts/generate-certs.sh
 ```
 
-Start:
+Start Middleman via `docker compose`:
 
 ```sh
 docker compose up --build
