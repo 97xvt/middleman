@@ -1,6 +1,25 @@
 # Middleman
 
-Local proxy/stub server built on OpenResty.
+Middleman is a simple proxy and stubbing server built on OpenResty. 
+
+The goal of this project is to provide a way to proxy requests from an application running in a web browser to another server running remotely. I have found this useful when developing front-end applications because you don't need to run the entire stack. This is especially useful when iterating and designing in the browser - it's possible to prototype UIs in the application without getting bogged down with the details of a production web server. 
+
+I also wanted a way to stub endpoints locally, while still hitting the remote API for things like authentication. These are configured in Middleman using Lua tables: 
+
+```lua
+return {
+  {
+    name = "health",
+    method = "GET",
+    path = "/health",
+    response = {
+      status = 200,
+      json = { status = "ok", source = "stub" },
+    },
+  },
+}
+```
+If a stub is defined locally, Middleman will use the stub to respond to incoming requests. Otherwise, the request is passed through to the proxy server. 
 
 ## Prerequisites
 
@@ -40,17 +59,16 @@ docker compose up --build
 curl -k https://localhost:3001/_health
 ```
 
-That's it. No config files to copy — sensible defaults are built in.
-
 ## How configuration works
 
-Middleman provides working defaults for all configuration. You only create override files when you need to customise behaviour.
+Middleman is configured via `config/project.local.lua` and `config/stubs.local.lua`:
 
-### Lua configuration (optional overrides)
+```
+touch config/project.local.lua
+touch config/stubs.local.lua
+```
 
-Create these files only when you need to customise. They are git-ignored.
-
-#### `config/project.local.lua`
+### `config/project.local.lua`
 
 Override project-level settings. Must return a table.
 
@@ -77,7 +95,7 @@ Fields:
 - `stubs_file` (string, optional) — absolute container path to a custom stubs file.
   When set explicitly, the file must exist or startup will fail.
 
-#### `config/stubs.local.lua`
+### `config/stubs.local.lua`
 
 Override stub rules. Must return a table (list of stub definitions).
 
