@@ -1,0 +1,31 @@
+error_log /dev/stderr info;
+events {}
+
+http {
+  access_log /dev/stdout;
+  lua_package_path "/app/lua/?.lua;;";
+  # Dev hot reload: reload Lua modules/rules on each request.
+  lua_code_cache off;
+
+  init_by_lua_block {
+    -- Validate config at startup. Uses built-in defaults when no override files exist.
+    require("project_config").validate_startup()
+  }
+
+  map "" $upstream_base_url {
+    default "__UPSTREAM_BASE_URL__";
+  }
+
+  # Required when proxy_pass uses a variable hostname (for example $upstream_base_url).
+  resolver 127.0.0.11 ipv6=off valid=30s;
+  resolver_timeout 5s;
+
+  map $http_upgrade $connection_upgrade {
+    default upgrade;
+    '' close;
+  }
+
+  include /app/config/nginx/http/*.conf;
+  # Project-specific listeners/routes. Override by editing the committed .conf files.
+  include /app/config/nginx/servers/*.conf;
+}

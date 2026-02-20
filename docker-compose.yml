@@ -1,0 +1,20 @@
+services:
+  middleman:
+    image: openresty/openresty:1.27.1.2-0-alpine
+    container_name: middleman
+    ports:
+      - "3001:3001"
+      - "50010:50010"
+    environment:
+      UPSTREAM_BASE_URL: ${UPSTREAM_BASE_URL:?.env file not found}
+    volumes:
+      - ./nginx/nginx.conf.template:/etc/nginx/templates/nginx.conf.template:ro
+      - ./lua:/app/lua:ro
+      - ./config:/app/config:ro
+      - ./responses:/app/responses:ro
+      - ./certs:/app/certs:ro
+    command: >
+      /bin/sh -c "
+      sed \"s|__UPSTREAM_BASE_URL__|$$UPSTREAM_BASE_URL|g\" /etc/nginx/templates/nginx.conf.template > /usr/local/openresty/nginx/conf/nginx.conf
+      && openresty -g 'daemon off;'
+      "
