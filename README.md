@@ -29,31 +29,31 @@ You do not need OpenResty or OpenSSL installed locally.
 
 ## First-time setup
 
-1. Create `.env`:
+Create `.env`:
 
 ```sh
 cp .env.example .env
 ```
 
-2. Edit `.env` and set your upstream:
+Edit `.env` and set your upstream:
 
 ```env
 UPSTREAM_BASE_URL=https://your-upstream.example.com
 ```
 
-3. Generate local TLS certs:
+Generate local TLS certs:
 
 ```sh
 docker run --rm -v "${PWD}:/work" alpine:3.20 sh /work/scripts/generate-certs.sh
 ```
 
-4. Start:
+Start:
 
 ```sh
 docker compose up --build
 ```
 
-5. Verify:
+Verify:
 
 ```sh
 curl -k https://localhost:3001/_health
