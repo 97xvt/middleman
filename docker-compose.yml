@@ -3,10 +3,12 @@ services:
     image: openresty/openresty:1.27.1.2-0-alpine
     container_name: middleman
     ports:
-      - "3001:3001"
-      - "50010:50010"
+      - "${HTTPS_PORT:-3001}:${HTTPS_PORT:-3001}"
+      - "${HTTP_PORT:-50010}:${HTTP_PORT:-50010}"
     environment:
       UPSTREAM_BASE_URL: ${UPSTREAM_BASE_URL:?.env file not found}
+      HTTPS_PORT: ${HTTPS_PORT:-3001}
+      HTTP_PORT: ${HTTP_PORT:-50010}
     volumes:
       - ./nginx/nginx.conf.template:/etc/nginx/templates/nginx.conf.template:ro
       - ./lua:/app/lua:ro
@@ -15,6 +17,9 @@ services:
       - ./certs:/app/certs:ro
     command: >
       /bin/sh -c "
-      sed \"s|__UPSTREAM_BASE_URL__|$$UPSTREAM_BASE_URL|g\" /etc/nginx/templates/nginx.conf.template > /usr/local/openresty/nginx/conf/nginx.conf
+      sed -e \"s|__UPSTREAM_BASE_URL__|$$UPSTREAM_BASE_URL|g\"
+      -e \"s|__HTTPS_PORT__|$$HTTPS_PORT|g\"
+      -e \"s|__HTTP_PORT__|$$HTTP_PORT|g\"
+      /etc/nginx/templates/nginx.conf.template > /usr/local/openresty/nginx/conf/nginx.conf
       && openresty -g 'daemon off;'
       "

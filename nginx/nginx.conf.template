@@ -26,6 +26,21 @@ http {
   }
 
   include /app/config/nginx/http/*.conf;
-  # Project-specific listeners/routes. Override by editing the committed .conf files.
+
+  server {
+    listen __HTTPS_PORT__ ssl;
+    ssl_certificate /app/certs/localhost-cert.pem;
+    ssl_certificate_key /app/certs/localhost-key.pem;
+
+    include /app/config/nginx/snippets/proxy-app.conf;
+  }
+
+  server {
+    listen __HTTP_PORT__;
+
+    include /app/config/nginx/snippets/proxy-app.conf;
+  }
+
+  # Optional: add extra server blocks (e.g. additional listeners).
   include /app/config/nginx/servers/*.conf;
 }

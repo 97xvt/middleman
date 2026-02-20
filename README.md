@@ -148,12 +148,17 @@ When you create an override file it replaces the defaults entirely (no merging).
 
 ### Nginx configuration
 
-The nginx config files under `config/nginx/` are committed to the repository and provide working defaults. Edit them directly when you need to change server blocks, listeners, or proxy behaviour.
+Server ports are configured via `.env`:
 
-- `config/nginx/servers/default.conf` — server blocks (HTTPS on 3001, HTTP on 50010).
-- `config/nginx/snippets/proxy-app.conf` — shared CORS headers, Lua hooks, proxy_pass.
+```env
+HTTPS_PORT=3001
+HTTP_PORT=50010
+```
 
-If you add a listener on a new container port, also update the `ports` mapping in `docker-compose.yml`.
+- `config/nginx/snippets/proxy-app.conf` — shared CORS headers, Lua hooks, proxy_pass. Edit this file to change proxy behaviour.
+- `config/nginx/servers/` — optional extra server blocks. Any `.conf` files placed here are included automatically.
+
+To add a listener on a new port, create a `.conf` file in `config/nginx/servers/`, add the port to `docker-compose.yml`'s `ports:` mapping, and restart.
 
 ## Hot reload
 
@@ -182,6 +187,6 @@ These paths are in `.gitignore`:
 
 - **Stubs not matching**: check method, path, and stub name in `config/stubs.local.lua`.
 - **No rewrite happening**: rewrites require `config/project.local.lua` with a `rewrites` table. First matching rule wins.
-- **nginx starts but no listeners**: check `config/nginx/servers/default.conf` exists and has valid `listen` directives.
+- **nginx starts but no listeners**: check `HTTPS_PORT` and `HTTP_PORT` are set in `.env` and restart the container.
 - **`no resolver defined to resolve ...`**: restart after pulling latest template; this setup expects Docker DNS (`127.0.0.11`) for variable upstream hosts.
 - **Cert errors**: regenerate certs with `docker run --rm -v "${PWD}:/work" alpine:3.20 sh /work/scripts/generate-certs.sh`.
